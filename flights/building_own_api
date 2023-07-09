@@ -1,0 +1,45 @@
+from flask import Flask, jsonify, request
+from flights_data import flights
+from utils import search_flight, get_index
+
+app = Flask(__name__)
+
+
+# Make a get request to get all the flights
+@app.route('/flights')
+def get_flights():
+    return jsonify(flights)
+
+
+@app.route('/flights/<int:id>')
+def get_flights_by_id(id):
+    a_flight = search_flight(id, flights)
+    return jsonify(a_flight)
+
+
+@app.route('/flights', methods=["POST"])
+def add_flight():
+    new_flight = request.get_json()
+    flights.append(new_flight)
+    return {}, 200
+
+
+# delete data
+@app.route('/flights/<int:id>', methods=["DELETE"])
+def delete_flight(id):
+    print("ID", id)
+    index = get_index(id, flights)
+    deleted_flight = flights.pop(index)
+    return jsonify(deleted_flight)
+
+# Update
+@app.route('/flights/<int:id>', methods=["PUT"])
+def update_flight(id):
+    updated_version_of_flight = request.get_json()
+    index = get_index(id, flights)
+    flights[index] = updated_version_of_flight
+    return jsonify(flights[index])
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
